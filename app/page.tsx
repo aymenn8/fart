@@ -2,15 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardIcon,
-  CardFooter,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
 
@@ -37,7 +29,7 @@ const fartSounds = [
   },
 ];
 
-const tokenAddress = "4r13jDBKB4weyJHpS9R9JZxLRJkuzRa744LU8vYqpump";
+const tokenAddress = "6CcuCL1LESQqTznT6wi9kjLPnAZs6b4GM1D1GeS8pump";
 
 export default function FartSoundWebsite() {
   const [interactionEnabled, setInteractionEnabled] = useState(false);
