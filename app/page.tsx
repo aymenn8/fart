@@ -2,7 +2,15 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardIcon,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
 
@@ -28,6 +36,8 @@ const fartSounds = [
     src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/fart5-NLLq4dLSfSlzVqkvbe5VRt2xy1NpCo.mp3",
   },
 ];
+
+const tokenAddress = "4r13jDBKB4weyJHpS9R9JZxLRJkuzRa744LU8vYqpump";
 
 export default function FartSoundWebsite() {
   const [interactionEnabled, setInteractionEnabled] = useState(false);
@@ -64,7 +74,7 @@ export default function FartSoundWebsite() {
         // Subscribe to token trades
         const payload = {
           method: "subscribeTokenTrade",
-          keys: ["DP1AMvTpiXGAyLasJsiXBv6pFMTwufETtgK6kxRWpump"],
+          keys: [tokenAddress],
         };
         console.log("📤 Sending subscription payload:", payload);
         ws.send(JSON.stringify(payload));
@@ -154,21 +164,29 @@ export default function FartSoundWebsite() {
   };
 
   return (
-    <div className="bg-amber-900">
+    <div className="bg-amber-900 min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
       <div className="flex flex-col items-center justify-center min-h-screen p-8">
-        <div className="">
-          <p className="text-amber-100 text-3xl">Token Address :</p>
-          <Image src="/logo.png" alt="Fartman" width={300} height={300} />
+        <div className="w-full max-w-2xl mx-auto mb-8">
+          <p className="text-amber-100 text-lg sm:text-2xl md:text-3xl text-center break-all bg-amber-800/50 p-4 rounded-lg border border-amber-700">
+            Token Address: {tokenAddress}
+          </p>
         </div>
+        <Image
+          src="/logo.png"
+          alt="Fartman"
+          width={300}
+          height={300}
+          className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 mb-8"
+        />
         {!interactionEnabled ? (
           <Button
             onClick={enableInteraction}
-            className="px-6 py-3 text-xl bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-lg transform transition duration-200 hover:scale-105"
+            className="px-6 py-3 text-lg sm:text-xl bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-lg transform transition duration-200 hover:scale-105 w-full max-w-xs"
           >
             MAKE IT FART
           </Button>
         ) : (
-          <div className="max-w-md w-full space-y-8">
+          <div className="w-full max-w-md space-y-8 px-4">
             <h1 className="text-4xl font-bold text-center text-amber-100">
               Make It FART
             </h1>
@@ -198,15 +216,16 @@ export default function FartSoundWebsite() {
 
             <Button
               onClick={playRandomFart}
-              className="w-full px-6 py-3 text-xl bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-lg transform transition duration-200 hover:scale-105"
+              className="w-full px-6 py-3 text-lg sm:text-xl bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-lg transform transition duration-200 hover:scale-105"
             >
               Play Next Fart!
             </Button>
 
-            <p className="text-center text-amber-200">
+            <p className="text-center text-amber-200 text-sm sm:text-base">
               A random fart sound will play automatically when someone buys the
-              <strong> $FART</strong> token OR if you click the{" "}
-              <strong>$FART</strong> button!
+              <strong className="text-amber-400"> $FART</strong> token OR if you
+              click the
+              <strong className="text-amber-400"> $FART</strong> button!
             </p>
           </div>
         )}
