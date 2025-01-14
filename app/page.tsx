@@ -22,58 +22,97 @@ export default function FartSoundWebsite() {
   const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
-    audioRefs.current = fartSounds.map(() => new Audio())
-    fartSounds.forEach((sound, index) => {
-      if (audioRefs.current[index]) {
-        audioRefs.current[index]!.src = sound.src
-      }
-    })
+    let reconnectTimeout: NodeJS.Timeout
+    let refreshInterval: NodeJS.Timeout
 
-    // Initialize WebSocket connection
-    const ws = new WebSocket('wss://pumpportal.fun/api/data')
-  
-    ws.onopen = () => {
-      console.log('Connected to PumpPortal')
-      toast({
-        title: "Connected!",
-        description: "Listening for trades...",
+    const connectWebSocket = () => {
+      audioRefs.current = fartSounds.map(() => new Audio())
+      fartSounds.forEach((sound, index) => {
+        if (audioRefs.current[index]) {
+          audioRefs.current[index]!.src = sound.src
+        }
       })
 
-      // Subscribe to token trades
-      const payload = {
-        method: "subscribeTokenTrade",
-        keys: ["ADuPhePqA6PBeCTSk1y6bY5uZ5drK48kcYtLVhdEpump"] // Replace with actual token address when available
-      }
-      ws.send(JSON.stringify(payload))
-    }
+      // Initialize WebSocket connection
+      const ws = new WebSocket('wss://pumpportal.fun/api/data')
+    
+      ws.onopen = () => {
+        console.log('🟢 Connected to PumpPortal')
+        toast({
+          title: "Connected!",
+          description: "Listening for trades...",
+        })
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      console.log('Received:', data)
-      
-      if (data.type === 'trade' && data.tokenSymbol === 'FART') {
-        playRandomFart()
-        setTrades(prev => [{
+        // Subscribe to token trades
+        const payload = {
+          method: "subscribeTokenTrade",
+          keys: ["DP1AMvTpiXGAyLasJsiXBv6pFMTwufETtgK6kxRWpump"]
+        }
+        console.log('📤 Sending subscription payload:', payload)
+        ws.send(JSON.stringify(payload))
+      }
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        console.log('📥 Received WebSocket message:', {
+          type: data.type,
+          tokenSymbol: data.tokenSymbol,
           amount: data.amount,
           price: data.price,
-          timestamp: new Date().toLocaleTimeString()
-        }, ...prev].slice(0, 5))
+          timestamp: new Date().toLocaleTimeString(),
+          fullData: data
+        })
+        
+        if (data.type === 'trade' && data.tokenSymbol === 'FART') {
+          console.log('🎵 Playing fart sound for FART token trade')
+          playRandomFart()
+          setTrades(prev => [{
+            amount: data.amount,
+            price: data.price,
+            timestamp: new Date().toLocaleTimeString()
+          }, ...prev].slice(0, 5))
+        }
       }
+
+      ws.onerror = (error) => {
+        console.error('🔴 WebSocket error:', error)
+        toast({
+          title: "Connection Error",
+          description: "Failed to connect to PumpPortal",
+          variant: "destructive",
+        })
+      }
+
+      ws.onclose = () => {
+        console.log('🔵 WebSocket connection closed, attempting to reconnect...')
+        // Attempt to reconnect after 5 seconds
+        reconnectTimeout = setTimeout(connectWebSocket, 5000)
+      }
+
+      wsRef.current = ws
     }
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error)
-      toast({
-        title: "Connection Error",
-        description: "Failed to connect to PumpPortal",
-        variant: "destructive",
-      })
-    }
+    // Initial connection
+    connectWebSocket()
 
-    wsRef.current = ws
+    // Refresh connection every 5 minutes
+    refreshInterval = setInterval(() => {
+      console.log('🔄 Refreshing WebSocket connection...')
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
+    }, 5 * 60 * 1000)
 
     return () => {
-      ws.close()
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout)
+      }
+      if (refreshInterval) {
+        clearInterval(refreshInterval)
+      }
       audioRefs.current.forEach(audio => audio?.pause())
     }
   }, [toast])
@@ -117,11 +156,11 @@ export default function FartSoundWebsite() {
           onClick={playRandomFart}
           className="w-full px-6 py-3 text-xl bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-lg transform transition duration-200 hover:scale-105"
         >
-          Manual Fart!
+          Click to Fart!
         </Button>
         
         <p className="text-center text-amber-200">
-          A random fart sound will play automatically when someone trades the FART token!
+          A random fart sound will play automatically when someone buys the FART token!
         </p>
       </div>
     </div>
