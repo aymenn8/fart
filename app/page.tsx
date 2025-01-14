@@ -66,7 +66,7 @@ export default function FartSoundWebsite() {
         // Subscribe to token trades
         const payload = {
           method: "subscribeTokenTrade",
-          keys: [tokenAddress],
+          keys: "6CcuCL1LESQqTznT6wi9kjLPnAZs6b4GM1D1GeS8pump",
         };
         console.log("📤 Sending subscription payload:", payload);
         ws.send(JSON.stringify(payload));
