@@ -29,7 +29,7 @@ const fartSounds = [
   },
 ];
 
-const tokenAddress = "6CcuCL1LESQqTznT6wi9kjLPnAZs6b4GM1D1GeS8pump";
+const tokenAddress = "DP1AMvTpiXGAyLasJsiXBv6pFMTwufETtgK6kxRWpump";
 
 export default function FartSoundWebsite() {
   const [interactionEnabled, setInteractionEnabled] = useState(false);
@@ -66,7 +66,7 @@ export default function FartSoundWebsite() {
         // Subscribe to token trades
         const payload = {
           method: "subscribeTokenTrade",
-          keys: "6CcuCL1LESQqTznT6wi9kjLPnAZs6b4GM1D1GeS8pump",
+          keys: "DP1AMvTpiXGAyLasJsiXBv6pFMTwufETtgK6kxRWpump",
         };
         console.log("📤 Sending subscription payload:", payload);
         ws.send(JSON.stringify(payload));
