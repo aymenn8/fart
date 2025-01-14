@@ -30,6 +30,7 @@ const fartSounds = [
 ];
 
 const tokenAddress = "DP1AMvTpiXGAyLasJsiXBv6pFMTwufETtgK6kxRWpump";
+const solInUSD = 186.27;
 
 export default function FartSoundWebsite() {
   const [interactionEnabled, setInteractionEnabled] = useState(false);
@@ -38,106 +39,66 @@ export default function FartSoundWebsite() {
   const audioRefs = useRef<(HTMLAudioElement | null)[]>([]);
   const { toast } = useToast();
   const wsRef = useRef<WebSocket | null>(null);
-
-  const solInUSD = 186.27;
-
   useEffect(() => {
-    let reconnectTimeout: NodeJS.Timeout;
-    let refreshInterval: NodeJS.Timeout;
+    audioRefs.current = fartSounds.map(() => new Audio());
+    fartSounds.forEach((sound, index) => {
+      if (audioRefs.current[index]) {
+        audioRefs.current[index]!.src = sound.src;
+      }
+    });
+    // Initialize WebSocket connection
+    const ws = new WebSocket("wss://pumpportal.fun/api/data");
 
-    const connectWebSocket = () => {
-      audioRefs.current = fartSounds.map(() => new Audio());
-      fartSounds.forEach((sound, index) => {
-        if (audioRefs.current[index]) {
-          audioRefs.current[index]!.src = sound.src;
-        }
+    ws.onopen = () => {
+      console.log("Connected to PumpPortal");
+      toast({
+        title: "Connected!",
+        description: "Listening for trades...",
       });
-
-      // Initialize WebSocket connection
-      const ws = new WebSocket("wss://pumpportal.fun/api/data");
-
-      ws.onopen = () => {
-        console.log("🟢 Connected to PumpPortal");
-        toast({
-          title: "Connected!",
-          description: "Listening for trades...",
-        });
-
-        // Subscribe to token trades
-        const payload = {
-          method: "subscribeTokenTrade",
-          keys: "DP1AMvTpiXGAyLasJsiXBv6pFMTwufETtgK6kxRWpump",
-        };
-        console.log("📤 Sending subscription payload:", payload);
-        ws.send(JSON.stringify(payload));
+      // Subscribe to token trades
+      const payload = {
+        method: "subscribeTokenTrade",
+        keys: [tokenAddress], // Replace with actual token address when available
       };
-
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log("📥 Received WebSocket message:");
-
-        if (data.txType === "buy") {
-          console.log("🎵 Playing fart sound for FART token trade");
-          playRandomFart();
-          setTrades((prev) =>
-            [
-              {
-                amount: Math.round(data.tokenAmount),
-                price: data.solAmount * solInUSD,
-                timestamp: new Date().toLocaleTimeString(),
-              },
-              ...prev,
-            ].slice(0, 5)
-          );
-        }
-      };
-
-      ws.onerror = (error) => {
-        toast({
-          title: "Connection Error",
-          description: "Failed to connect to PumpPortal",
-          variant: "destructive",
-        });
-      };
-
-      ws.onclose = () => {
-        // Attempt to reconnect after 5 seconds
-        reconnectTimeout = setTimeout(connectWebSocket, 5000);
-      };
-
-      wsRef.current = ws;
+      ws.send(JSON.stringify(payload));
     };
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log("Received:", data);
 
-    // Initial connection
-    connectWebSocket();
-
-    // Refresh connection every 5 minutes
-    refreshInterval = setInterval(() => {
-      if (wsRef.current) {
-        wsRef.current.close();
+      if (data.type === "buy") {
+        playRandomFart();
+        setTrades((prev) =>
+          [
+            {
+              amount: Math.round(data.tokenAmount),
+              price: data.solAmount * solInUSD,
+              timestamp: new Date().toLocaleTimeString(),
+            },
+            ...prev,
+          ].slice(0, 5)
+        );
       }
-    }, 5 * 60 * 1000);
-
+    };
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      toast({
+        title: "Connection Error",
+        description: "Failed to connect to PumpPortal",
+        variant: "destructive",
+      });
+    };
+    wsRef.current = ws;
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-      }
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-      }
+      ws.close();
       audioRefs.current.forEach((audio) => audio?.pause());
     };
   }, [toast]);
-
   const playRandomFart = () => {
     let randomIndex;
     do {
       randomIndex = Math.floor(Math.random() * fartSounds.length);
     } while (randomIndex === lastPlayed && fartSounds.length > 1);
-
     const audio = audioRefs.current[randomIndex];
     if (audio) {
       audio.currentTime = 0;
