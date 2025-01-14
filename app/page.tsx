@@ -66,7 +66,7 @@ export default function FartSoundWebsite() {
       const data = JSON.parse(event.data);
       console.log("Received:", data);
 
-      if (data.type === "buy") {
+      if (data.txType === "buy") {
         playRandomFart();
         setTrades((prev) =>
           [
