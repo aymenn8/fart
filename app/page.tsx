@@ -29,7 +29,7 @@ const fartSounds = [
   },
 ];
 
-const tokenAddress = "DP1AMvTpiXGAyLasJsiXBv6pFMTwufETtgK6kxRWpump";
+const tokenAddress = "c2hsJTQJFRhgRLYnKJMa33aPGWf78RTLziB6jWPpump";
 const solInUSD = 186.27;
 
 export default function FartSoundWebsite() {
